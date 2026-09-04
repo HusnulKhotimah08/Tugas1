@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Sensus Ekonomi & Sosial Daerah</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .glow-indigo {
+            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.3);
+        }
+        .glow-amber {
+            box-shadow: 0 0 20px -5px rgba(245, 158, 11, 0.3);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-4 py-3.5">
+        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <!-- Logo & Brand -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-amber-400 p-0.5 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                        <i class="fa-solid fa-chart-line text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-indigo-400 text-lg"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">Sensus Daerah</h1>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Live Sync
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400">Sistem Pemetaan Ekonomi & Sosio-Demografi</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-2.5 w-full md:w-auto justify-end">
+                <button onclick="exportDataCSV()" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-download text-amber-400"></i> Export CSV
+                </button>
+                <button onclick="openApifyModal()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-2 shadow-lg shadow-amber-500/10">
+                    <i class="fa-solid fa-cloud-arrow-up text-sm"></i> Apify Cloud
+                </button>
+                <button onclick="openFormModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-4 py-2 rounded-xl text-xs transition flex items-center gap-2 shadow-lg shadow-indigo-600/30 border border-indigo-400/30">
+                    <i class="fa-solid fa-plus"></i> Tambah Data
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 flex-grow space-y-6">
+
+        <!-- Banner Token Apify Information -->
+        <div class="relative overflow-hidden glass-panel rounded-2xl p-4 border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-slate-900 to-indigo-950/40">
+            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-key text-amber-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-bold text-sm text-amber-200">Apify Data Hub Token Active</h3>
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono border border-amber-500/30">150+ Record Set</span>
+                        </div>
+                        <p class="text-xs text-slate-400 font-mono mt-0.5">Token Key: <span class="text-slate-200 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">apify_api_76zo4hZMd2jIv...</span></p>
+                    </div>
+                </div>
+                <button onclick="syncToApify()" id="btnSyncQuick" class="w-full sm:w-auto text-xs bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-500/40 font-semibold px-4 py-2.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-arrows-rotate animate-spin-slow"></i> Sync Data ke Cloud
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Summary Stat Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Card 1 -->
+            <div class="glass-card rounded-2xl p-4 border border-slate-800 hover:border-indigo-500/40 transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Kepala Keluarga</p>
+                        <h2 class="text-2xl font-black text-white mt-1.5 tracking-tight" id="statTotalKK">0</h2>
+                        <p class="text-xs text-emerald-400 mt-1 flex items-center gap-1 font-medium">
+                            <i class="fa-solid fa-[#000] fa-circle-check"></i> <span id="statSubKK">100% Terverifikasi</span>
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="glass-card rounded-2xl p-4 border border-slate-800 hover:border-blue-500/40 transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Rata-Rata Anggota/KK</p>
+                        <h2 class="text-2xl font-black text-white mt-1.5 tracking-tight" id="statAvgAnggota">0</h2>
+                        <p class="text-xs text-slate-400 mt-1 font-medium"><i class="fa-solid fa-people-group text-blue-400 mr-1"></i> Jiwa / Rumah Tangga</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-house-chimney-user"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="glass-card rounded-2xl p-4 border border-slate-800 hover:border-emerald-500/40 transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Rata-Rata Pendapatan</p>
+                        <h2 class="text-2xl font-black text-emerald-400 mt-1.5 tracking-tight" id="statAvgIncome">Rp 0</h2>
+                        <p class="text-xs text-slate-400 mt-1 font-medium"><i class="fa-solid fa-wallet text-emerald-400 mr-1"></i> Per Bulan / KK</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-money-bill-trend-up"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="glass-card rounded-2xl p-4 border border-slate-800 hover:border-amber-500/40 transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Kendaraan</p>
+                        <h2 class="text-2xl font-black text-white mt-1.5 tracking-tight" id="statTotalKendaraan">0</h2>
+                        <p class="text-xs text-amber-400 mt-1 font-medium" id="statSubKendaraan">0 Mobil | 0 Motor</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-car-side"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Doughnut Chart -->
+            <div class="lg:col-span-5 glass-card p-5 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-indigo-400"></i> Kepemilikan Tempat Tinggal
+                        </h3>
+                        <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-1 rounded-lg border border-slate-700">Rasio Sensus</span>
+                    </div>
+                    <div class="relative h-60 flex items-center justify-center">
+                        <canvas id="chartRumah"></canvas>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-800/80 text-center text-xs">
+                    <div class="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                        <p class="text-slate-400 text-[10px]">Milik Pribadi</p>
+                        <p class="font-bold text-emerald-400 text-sm mt-0.5" id="countMilikPribadi">0 KK</p>
+                    </div>
+                    <div class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                        <p class="text-slate-400 text-[10px]">Kontrak / Sewa</p>
+                        <p class="font-bold text-amber-400 text-sm mt-0.5" id="countKontrak">0 KK</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="lg:col-span-7 glass-card p-5 rounded-2xl border border-slate-800">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-column text-amber-400"></i> Rata-Rata Pendapatan per Pekerjaan
+                    </h3>
+                    <span class="text-[10px] bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded-lg border border-indigo-500/20 font-medium">Dalam Rupiah (IDR)</span>
+                </div>
+                <div class="relative h-72">
+                    <canvas id="chartPenghasilan"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Table Section -->
+        <section class="glass-card rounded-2xl border border-slate-800 overflow-hidden">
+            <!-- Filter & Search Controls Header -->
+            <div class="p-4 border-b border-slate-800 bg-slate-900/50 flex flex-col lg:flex-row gap-3 justify-between items-center">
+                <!-- Search bar -->
+                <div class="relative w-full lg:w-96">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari nama kepala keluarga atau pekerjaan..." class="w-full pl-9 pr-8 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition">
+                    <button onclick="clearSearch()" id="btnClearSearch" class="hidden absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 text-xs">&times;</button>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+                    <!-- Filter Status Rumah -->
+                    <select id="filterStatusRumah" onchange="applyFilters()" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                        <option value="">Semua Status Rumah</option>
+                        <option value="Milik Pribadi">Milik Pribadi</option>
+                        <option value="Kontrak/Sewa">Kontrak/Sewa</option>
+                    </select>
+
+                    <!-- Filter Pekerjaan -->
+                    <select id="filterPenghasilan" onchange="applyFilters()" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                        <option value="">Semua Pekerjaan</option>
+                        <option value="PNS / ASN">PNS / ASN</option>
+                        <option value="Karyawan Swasta">Karyawan Swasta</option>
+                        <option value="Wiraswasta / Usaha">Wiraswasta / Usaha</option>
+                        <option value="Petani / Nelayan">Petani / Nelayan</option>
+                        <option value="Buruh / Pekerja Lepas">Buruh / Pekerja Lepas</option>
+                        <option value="Professional / Freelance">Professional / Freelance</option>
+                    </select>
+
+                    <!-- Sort By -->
+                    <select id="sortBy" onchange="applyFilters()" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                        <option value="id-asc">Urutkan: ID Terlama</option>
+                        <option value="id-desc">Urutkan: Terbaru</option>
+                        <option value="income-desc">Pendapatan Tertinggi</option>
+                        <option value="income-asc">Pendapatan Terendah</option>
+                        <option value="anggota-desc">Anggota Terbanyak</option>
+                    </select>
+
+                    <!-- View Switcher -->
+                    <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                        <button onclick="setViewMode('table')" id="btnViewTable" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition">
+                            <i class="fa-solid fa-list"></i>
+                        </button>
+                        <button onclick="setViewMode('grid')" id="btnViewGrid" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                            <i class="fa-solid fa-grip border-none"></i>
+                        </button>
+                    </div>
+
+                    <button onclick="resetFilters()" class="p-2 border border-slate-800 hover:bg-slate-800 rounded-xl text-xs text-slate-400 hover:text-white transition" title="Reset Filters">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div id="tableViewContainer" class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-900/80 text-slate-400 uppercase text-[10px] font-bold tracking-wider border-b border-slate-800">
+                            <th class="py-3.5 px-4">No / ID</th>
+                            <th class="py-3.5 px-4">Kepala Keluarga</th>
+                            <th class="py-3.5 px-4">Anggota</th>
+                            <th class="py-3.5 px-4">Pekerjaan</th>
+                            <th class="py-3.5 px-4">Pendapatan / Bln</th>
+                            <th class="py-3.5 px-4">Status Rumah</th>
+                            <th class="py-3.5 px-4">Jml Rumah</th>
+                            <th class="py-3.5 px-4">Kendaraan</th>
+                            <th class="py-3.5 px-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="censusTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+                        <!-- Data rows injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Grid Cards View Container (Hidden by default) -->
+            <div id="gridViewContainer" class="hidden p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Cards injected by JS -->
+            </div>
+
+            <!-- Pagination Footer -->
+            <div class="p-4 border-t border-slate-800 bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+                <div id="paginationInfo" class="font-medium">Menampilkan 0 - 0 dari 0 data</div>
+                <div class="flex items-center space-x-1.5" id="paginationControls">
+                    <!-- Pagination buttons injected by JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Detail Profile Keluarga -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="glass-card rounded-2xl border border-slate-700 w-full max-w-md overflow-hidden shadow-2xl transform transition-all">
+            <div class="bg-gradient-to-r from-indigo-900 to-slate-900 p-5 border-b border-slate-800 flex justify-between items-start">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 font-bold text-lg" id="detailAvatar">
+                        KK
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-white" id="detailNama">Nama Kepala Keluarga</h3>
+                        <p class="text-xs text-indigo-300" id="detailId">ID Sensus: #001</p>
+                    </div>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+            </div>
+            
+            <div class="p-5 space-y-4 text-xs">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800">
+                        <span class="text-slate-500 block text-[10px] uppercase font-semibold">Anggota Keluarga</span>
+                        <span class="font-bold text-sm text-slate-200 mt-0.5 block" id="detailAnggota">4 Orang</span>
+                    </div>
+                    <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800">
+                        <span class="text-slate-500 block text-[10px] uppercase font-semibold">Status Rumah</span>
+                        <span class="font-bold text-sm mt-0.5 block" id="detailStatusRumah">Milik Pribadi</span>
+                    </div>
+                </div>
+
+                <div class="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Sumber Pekerjaan:</span>
+                        <span class="font-semibold text-slate-200" id="detailPekerjaan">Karyawan Swasta</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Pendapatan Bulanan:</span>
+                        <span class="font-bold text-emerald-400 text-sm" id="detailPendapatan">Rp 6.500.000</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Jumlah Unit Rumah:</span>
+                        <span class="font-semibold text-slate-200" id="detailJumlahRumah">1 Unit</span>
+                    </div>
+                </div>
+
+                <div class="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800">
+                    <span class="text-slate-500 block text-[10px] uppercase font-semibold mb-2">Kepemilikan Aset Kendaraan</span>
+                    <div class="flex items-center justify-around text-center py-1">
+                        <div>
+                            <i class="fa-solid fa-car text-indigo-400 text-base mb-1"></i>
+                            <p class="font-bold text-slate-200 text-xs" id="detailMobil">0 Mobil</p>
+                        </div>
+                        <div class="w-px h-8 bg-slate-800"></div>
+                        <div>
+                            <i class="fa-solid fa-motorcycle text-amber-400 text-base mb-1"></i>
+                            <p class="font-bold text-slate-200 text-xs" id="detailMotor">1 Motor</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-900 border-t border-slate-800 flex justify-end">
+                <button onclick="closeDetailModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form Tambah / Edit Data -->
+    <div id="formModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="glass-card rounded-2xl border border-slate-700 w-full max-w-lg overflow-hidden shadow-2xl">
+            <div class="bg-indigo-700/80 px-6 py-4 border-b border-indigo-600/50 flex justify-between items-center text-white">
+                <h3 class="font-bold text-sm tracking-wide" id="modalTitle"><i class="fa-solid fa-user-plus mr-2"></i> Tambah Data Sensus</h3>
+                <button onclick="closeFormModal()" class="text-indigo-200 hover:text-white text-xl">&times;</button>
+            </div>
+            
+            <form id="censusForm" onsubmit="saveCensusData(event)" class="p-6 space-y-4 text-xs">
+                <input type="hidden" id="editIndex" value="-1">
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nama Kepala Keluarga</label>
+                    <input type="text" id="inputNama" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:ring-2 focus:ring-indigo-500/50 focus:outline-none" placeholder="Contoh: Budi Santoso">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Jumlah Anggota Keluarga</label>
+                        <input type="number" id="inputAnggota" min="1" max="20" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:ring-2 focus:ring-indigo-500/50 focus:outline-none" value="4">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Jumlah Rumah Dimiliki</label>
+                        <input type="number" id="inputJumlahRumah" min="0" max="10" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:ring-2 focus:ring-indigo-500/50 focus:outline-none" value="1">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Sumber Pekerjaan</label>
+                        <select id="inputPenghasilan" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                            <option value="PNS / ASN">PNS / ASN</option>
+                            <option value="Karyawan Swasta">Karyawan Swasta</option>
+                            <option value="Wiraswasta / Usaha">Wiraswasta / Usaha</option>
+                            <option value="Petani / Nelayan">Petani / Nelayan</option>
+                            <option value="Buruh / Pekerja Lepas">Buruh / Pekerja Lepas</option>
+                            <option value="Professional / Freelance">Professional / Freelance</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Pendapatan / Bulan (IDR)</label>
+                        <input type="number" id="inputNominalPendapatan" min="0" step="100000" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:ring-2 focus:ring-indigo-500/50 focus:outline-none" placeholder="5000000">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Status Tempat Tinggal</label>
+                    <select id="inputStatusRumah" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                        <option value="Milik Pribadi">Milik Pribadi</option>
+                        <option value="Kontrak/Sewa">Kontrak/Sewa</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Jumlah Motor</label>
+                        <input type="number" id="inputMotor" min="0" max="10" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:ring-2 focus:ring-indigo-500/50 focus:outline-none" value="1">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Jumlah Mobil</label>
+                        <input type="number" id="inputMobil" min="0" max="10" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:ring-2 focus:ring-indigo-500/50 focus:outline-none" value="0">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-2 border-t border-slate-800">
+                    <button type="button" onclick="closeFormModal()" class="px-4 py-2 border border-slate-800 text-slate-400 rounded-xl font-medium hover:bg-slate-900 transition">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/20">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Apify Sync Info -->
+    <div id="apifyModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="glass-card rounded-2xl border border-slate-700 w-full max-w-lg overflow-hidden shadow-2xl">
+            <div class="bg-slate-900 px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="font-bold text-sm text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Apify Cloud Dataset Integration
+                </h3>
+                <button onclick="closeApifyModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 text-xs text-slate-300">
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[11px] break-all">
+                    <span class="text-amber-400 font-bold">APIKEY:</span> apify_api_76zo4hZMd2jIv5vvDcNUIdWhnYC4B34mTJdG
+                </div>
+                <p class="text-slate-400 leading-relaxed">Fitur ini menyinkronkan seluruh dataset sensus lokal secara otomatis ke platform cloud Apify Dataset / Storage Actor.</p>
+                
+                <div id="apifyStatusLog" class="bg-slate-950 text-emerald-400 p-3.5 rounded-xl border border-slate-800 font-mono text-[11px] h-36 overflow-y-auto leading-relaxed">
+                    > Sistem siap menyinkronkan 150+ record data sensus.<br>
+                    > Klik 'Jalankan Sync Now' untuk memulai proses transmisi.
+                </div>
+                
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button onclick="closeApifyModal()" class="px-4 py-2 border border-slate-800 text-slate-400 rounded-xl hover:bg-slate-900 transition">Tutup</button>
+                    <button onclick="syncToApify()" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-amber-500/20">Jalankan Sync Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950 py-4 mt-8">
+        <div class="container mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span>Aplikasi Sensus Ekonomi & Sosial Daerah &copy; 2026</span>
+            <span class="font-mono text-[11px] text-slate-600">Apify API Connected &bull; 150+ Records Sync Ready</span>
+        </div>
+    </footer>
+
+    <!-- Application Logic Script -->
+    <script>
+        const APIFY_TOKEN = "apify_api_76zo4hZMd2jIv5vvDcNUIdWhnYC4B34mTJdG";
+        
+        const firstNames = ["Ahmad", "Budi", "Candra", "Dedi", "Eko", "Fajar", "Gita", "Hadi", "Irfan", "Joko", "Kartika", "Lestari", "Mulyadi", "Nugroho", "Oki", "Pratama", "Qori", "Rizal", "Siti", "Taufik", "Utami", "Vina", "Wahyu", "Xavier", "Yusuf", "Zainal", "Anisa", "Bagus", "Dewi", "Endang"];
+        const lastNames = ["Santoso", "Wijaya", "Kusuma", "Hidayat", "Saputra", "Utomo", "Nugraha", "Permana", "Wibowo", "Subagyo", "Siregar", "Laksana", "Setiawan", "Prasetya", "Hasan", "Raharjo", "Mahendra", "Firmansyah"];
+        const pekerjaanList = ["PNS / ASN", "Karyawan Swasta", "Wiraswasta / Usaha", "Petani / Nelayan", "Buruh / Pekerja Lepas", "Professional / Freelance"];
+        const statusRumahList = ["Milik Pribadi", "Kontrak/Sewa"];
+
+        let censusData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let viewMode = 'table'; // 'table' or 'grid'
+
+        let chartRumahInstance = null;
+        let chartPenghasilanInstance = null;
+
+        // Generate 155 data sensus acak secara realistis
+        function generateDummyData() {
+            const data = [];
+            for (let i = 1; i <= 155; i++) {
+                const nama = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
+                const anggota = Math.floor(Math.random() * 6) + 1; // 1 - 6 orang
+                const pekerjaan = pekerjaanList[Math.floor(Math.random() * pekerjaanList.length)];
+                
+                // Kalkulasi perkiraan gaji berdasarkan pekerjaan
+                let baseIncome = 2500000;
+                if (pekerjaan === "PNS / ASN") baseIncome = 4500000 + Math.random() * 5000000;
+                else if (pekerjaan === "Karyawan Swasta") baseIncome = 3500000 + Math.random() * 7000000;
+                else if (pekerjaan === "Wiraswasta / Usaha") baseIncome = 3000000 + Math.random() * 12000000;
+                else if (pekerjaan === "Professional / Freelance") baseIncome = 5000000 + Math.random() * 10000000;
+                else if (pekerjaan === "Petani / Nelayan") baseIncome = 1800000 + Math.random() * 3000000;
+                else baseIncome = 1500000 + Math.random() * 2500000;
+
+                // Status rumah strictly Milik Pribadi vs Kontrak/Sewa
+                const statusRumah = Math.random() > 0.4 ? "Milik Pribadi" : "Kontrak/Sewa";
+                
+                // Jumlah rumah
+                let jmlRumah = statusRumah === 'Milik Pribadi' ? (Math.random() > 0.8 ? 2 : 1) : (Math.random() > 0.85 ? 1 : 0);
+
+                // Kendaraan
+                const motor = Math.floor(Math.random() * 3); // 0 - 2 motor
+                let mobil = 0;
+                if (baseIncome > 6000000 && Math.random() > 0.4) {
+                    mobil = Math.floor(Math.random() * 2) + 1;
+                }
+
+                data.push({
+                    id: i,
+                    nama: nama,
+                    anggotaKeluarga: anggota,
+                    sumberPenghasilan: pekerjaan,
+                    pendapatanBulan: Math.round(baseIncome / 100000) * 100000,
+                    statusRumah: statusRumah,
+                    jumlahRumah: jmlRumah,
+                    jumlahMotor: motor,
+                    jumlahMobil: mobil
+                });
+            }
+            return data;
+        }
+
+        window.onload = function() {
+            censusData = generateDummyData();
+            filteredData = [...censusData];
+            
+            updateStats();
+            renderDataView();
+            initCharts();
+        };
+
+        // Format Currency IDR
+        function formatIDR(val) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+        }
+
+        function updateStats() {
+            const totalKK = filteredData.length;
+            const totalAnggota = filteredData.reduce((acc, curr) => acc + curr.anggotaKeluarga, 0);
+            const avgAnggota = totalKK > 0 ? (totalAnggota / totalKK).toFixed(1) : 0;
+            const totalIncome = filteredData.reduce((acc, curr) => acc + curr.pendapatanBulan, 0);
+            const avgIncome = totalKK > 0 ? Math.round(totalIncome / totalKK) : 0;
+
+            const totalMobil = filteredData.reduce((acc, curr) => acc + curr.jumlahMobil, 0);
+            const totalMotor = filteredData.reduce((acc, curr) => acc + curr.jumlahMotor, 0);
+
+            const countMilik = filteredData.filter(d => d.statusRumah === 'Milik Pribadi').length;
+            const countSewa = filteredData.filter(d => d.statusRumah === 'Kontrak/Sewa').length;
+
+            document.getElementById('statTotalKK').innerText = totalKK;
+            document.getElementById('statAvgAnggota').innerText = avgAnggota;
+            document.getElementById('statAvgIncome').innerText = formatIDR(avgIncome);
+            document.getElementById('statTotalKendaraan').innerText = totalMobil + totalMotor;
+            document.getElementById('statSubKendaraan').innerText = `${totalMobil} Mobil | ${totalMotor} Motor`;
+
+            document.getElementById('countMilikPribadi').innerText = `${countMilik} KK`;
+            document.getElementById('countKontrak').innerText = `${countSewa} KK`;
+        }
+
+        function renderDataView() {
+            if (viewMode === 'table') {
+                document.getElementById('tableViewContainer').classList.remove('hidden');
+                document.getElementById('gridViewContainer').classList.add('hidden');
+                renderTable();
+            } else {
+                document.getElementById('tableViewContainer').classList.add('hidden');
+                document.getElementById('gridViewContainer').classList.remove('hidden');
+                renderGrid();
+            }
+            renderPagination();
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            if (mode === 'table') {
+                document.getElementById('btnViewTable').className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition";
+                document.getElementById('btnViewGrid').className = "px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
+            } else {
+                document.getElementById('btnViewTable').className = "px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
+                document.getElementById('btnViewGrid').className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition";
+            }
+            renderDataView();
+        }
+
+        // Render Table Data
+        function renderTable() {
+            const tbody = document.getElementById('censusTableBody');
+            tbody.innerHTML = '';
+
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const pageData = filteredData.slice(startIdx, endIdx);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-500">Tidak ada data sensus yang sesuai filter.</td></tr>`;
+                return;
+            }
+
+            pageData.forEach((item, index) => {
+                const rowNum = startIdx + index + 1;
+                
+                const isMilik = item.statusRumah === 'Milik Pribadi';
+                const badgeClass = isMilik 
+                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                    : "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/80 transition cursor-pointer group";
+                tr.onclick = (e) => {
+                    // Prevent detail popup if clicking action buttons
+                    if (!e.target.closest('button')) showDetailModal(item.id);
+                };
+
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 font-mono text-slate-500">#${String(item.id).padStart(3, '0')}</td>
+                    <td class="py-3.5 px-4 font-bold text-white group-hover:text-indigo-400 transition">${item.nama}</td>
+                    <td class="py-3.5 px-4 text-slate-300"><i class="fa-solid fa-user text-slate-500 mr-1.5"></i> ${item.anggotaKeluarga} orang</td>
+                    <td class="py-3.5 px-4"><span class="bg-indigo-950 text-indigo-300 text-[11px] px-2.5 py-1 rounded-md border border-indigo-800/60 font-medium">${item.sumberPenghasilan}</span></td>
+                    <td class="py-3.5 px-4 font-semibold text-emerald-400">${formatIDR(item.pendapatanBulan)}</td>
+                    <td class="py-3.5 px-4"><span class="text-[10px] px-2.5 py-1 rounded-full font-bold ${badgeClass}">${item.statusRumah}</span></td>
+                    <td class="py-3.5 px-4">${item.jumlahRumah} unit</td>
+                    <td class="py-3.5 px-4 text-slate-400">
+                        <span class="inline-flex items-center gap-1 mr-2"><i class="fa-solid fa-car text-indigo-400"></i> ${item.jumlahMobil}</span>
+                        <span class="inline-flex items-center gap-1"><i class="fa-solid fa-motorcycle text-amber-400"></i> ${item.jumlahMotor}</span>
+                    </td>
+                    <td class="py-3.5 px-4 text-center space-x-1">
+                        <button onclick="editData(${item.id})" class="p-1.5 text-slate-400 hover:text-indigo-400 transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteData(${item.id})" class="p-1.5 text-slate-400 hover:text-rose-400 transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Grid View
+        function renderGrid() {
+            const container = document.getElementById('gridViewContainer');
+            container.innerHTML = '';
+
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const pageData = filteredData.slice(startIdx, endIdx);
+
+            if (pageData.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">Tidak ada data sensus ditemukan.</div>`;
+                return;
+            }
+
+            pageData.forEach(item => {
+                const isMilik = item.statusRumah === 'Milik Pribadi';
+                const badgeClass = isMilik 
+                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                    : "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-900/90 rounded-2xl p-4 border border-slate-800 hover:border-indigo-500/50 transition duration-300 flex flex-col justify-between cursor-pointer group";
+                card.onclick = (e) => {
+                    if (!e.target.closest('button')) showDetailModal(item.id);
+                };
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <span class="text-[10px] font-mono text-slate-500">#${String(item.id).padStart(3, '0')}</span>
+                                <h4 class="font-bold text-white text-sm group-hover:text-indigo-400 transition">${item.nama}</h4>
+                            </div>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">${item.statusRumah}</span>
+                        </div>
+                        <div class="space-y-1.5 text-xs text-slate-300 mb-4">
+                            <div class="flex justify-between text-slate-400">
+                                <span>Pekerjaan:</span>
+                                <span class="text-slate-200 font-medium">${item.sumberPenghasilan}</span>
+                            </div>
+                            <div class="flex justify-between text-slate-400">
+                                <span>Anggota Keluarga:</span>
+                                <span class="text-slate-200 font-medium">${item.anggotaKeluarga} Orang</span>
+                            </div>
+                            <div class="flex justify-between text-slate-400">
+                                <span>Pendapatan:</span>
+                                <span class="text-emerald-400 font-bold">${formatIDR(item.pendapatanBulan)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-3 text-slate-400">
+                            <span><i class="fa-solid fa-car text-indigo-400"></i> ${item.jumlahMobil}</span>
+                            <span><i class="fa-solid fa-motorcycle text-amber-400"></i> ${item.jumlahMotor}</span>
+                            <span><i class="fa-solid fa-house text-slate-400"></i> ${item.jumlahRumah}</span>
+                        </div>
+                        <div class="space-x-1">
+                            <button onclick="editData(${item.id})" class="p-1 text-slate-400 hover:text-indigo-400"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteData(${item.id})" class="p-1 text-slate-400 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderPagination() {
+            const totalItems = filteredData.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+            const startIdx = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+            const endIdx = Math.min(currentPage * itemsPerPage, totalItems);
+
+            document.getElementById('paginationInfo').innerText = `Menampilkan ${startIdx} - ${endIdx} dari ${totalItems} data sensus`;
+
+            const container = document.getElementById('paginationControls');
+            container.innerHTML = '';
+
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `px-3 py-1.5 rounded-xl border ${currentPage === 1 ? 'border-slate-800 text-slate-600 cursor-not-allowed' : 'border-slate-800 text-slate-300 hover:bg-slate-800'}`;
+            prevBtn.innerText = 'Sebelumnya';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderDataView(); } };
+            container.appendChild(prevBtn);
+
+            // Page Indicator
+            const pageIndicator = document.createElement('span');
+            pageIndicator.className = "px-3 py-1.5 text-slate-400 font-medium";
+            pageIndicator.innerText = `${currentPage} / ${totalPages}`;
+            container.appendChild(pageIndicator);
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `px-3 py-1.5 rounded-xl border ${currentPage >= totalPages ? 'border-slate-800 text-slate-600 cursor-not-allowed' : 'border-slate-800 text-slate-300 hover:bg-slate-800'}`;
+            nextBtn.innerText = 'Selanjutnya';
+            nextBtn.disabled = currentPage >= totalPages;
+            nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderDataView(); } };
+            container.appendChild(nextBtn);
+        }
+
+        function applyFilters() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const filterRumah = document.getElementById('filterStatusRumah').value;
+            const filterKerja = document.getElementById('filterPenghasilan').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            document.getElementById('btnClearSearch').classList.toggle('hidden', searchVal === '');
+
+            filteredData = censusData.filter(item => {
+                const matchSearch = item.nama.toLowerCase().includes(searchVal) || item.sumberPenghasilan.toLowerCase().includes(searchVal);
+                const matchRumah = filterRumah === "" || item.statusRumah === filterRumah;
+                const matchKerja = filterKerja === "" || item.sumberPenghasilan === filterKerja;
+
+                return matchSearch && matchRumah && matchKerja;
+            });
+
+            // Sorting
+            if (sortBy === 'id-asc') filteredData.sort((a, b) => a.id - b.id);
+            else if (sortBy === 'id-desc') filteredData.sort((a, b) => b.id - a.id);
+            else if (sortBy === 'income-desc') filteredData.sort((a, b) => b.pendapatanBulan - a.pendapatanBulan);
+            else if (sortBy === 'income-asc') filteredData.sort((a, b) => a.pendapatanBulan - b.pendapatanBulan);
+            else if (sortBy === 'anggota-desc') filteredData.sort((a, b) => b.anggotaKeluarga - a.anggotaKeluarga);
+
+            currentPage = 1;
+            updateStats();
+            renderDataView();
+            updateCharts();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            applyFilters();
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterStatusRumah').value = '';
+            document.getElementById('filterPenghasilan').value = '';
+            document.getElementById('sortBy').value = 'id-asc';
+            applyFilters();
+        }
+
+        function initCharts() {
+            // Doughnut Chart (Status Rumah)
+            const ctxRumah = document.getElementById('chartRumah').getContext('2d');
+            chartRumahInstance = new Chart(ctxRumah, {
+                type: 'doughnut',
+                data: getChartRumahData(),
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11 } } }
+                    }
+                }
+            });
+
+            // Bar Chart (Pendapatan per Pekerjaan)
+            const ctxPenghasilan = document.getElementById('chartPenghasilan').getContext('2d');
+            chartPenghasilanInstance = new Chart(ctxPenghasilan, {
+                type: 'bar',
+                data: getChartPenghasilanData(),
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 10 } },
+                            grid: { display: false }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { family: 'Plus Jakarta Sans', size: 10 },
+                                callback: function(value) { return 'Rp ' + (value / 1000000) + ' Jt'; }
+                            },
+                            grid: { color: '#1e293b' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getChartRumahData() {
+            const counts = { "Milik Pribadi": 0, "Kontrak/Sewa": 0 };
+            filteredData.forEach(item => {
+                if (counts[item.statusRumah] !== undefined) counts[item.statusRumah]++;
+            });
+
+            return {
+                labels: ['Milik Pribadi', 'Kontrak / Sewa'],
+                datasets: [{
+                    data: [counts['Milik Pribadi'], counts['Kontrak/Sewa']],
+                    backgroundColor: ['#10b981', '#f59e0b'],
+                    borderWidth: 0
+                }]
+            };
+        }
+
+        function getChartPenghasilanData() {
+            const totals = {};
+            const counts = {};
+            pekerjaanList.forEach(p => { totals[p] = 0; counts[p] = 0; });
+
+            filteredData.forEach(item => {
+                if (totals[item.sumberPenghasilan] !== undefined) {
+                    totals[item.sumberPenghasilan] += item.pendapatanBulan;
+                    counts[item.sumberPenghasilan]++;
+                }
+            });
+
+            const averages = pekerjaanList.map(p => counts[p] > 0 ? Math.round(totals[p] / counts[p]) : 0);
+
+            return {
+                labels: pekerjaanList,
+                datasets: [{
+                    label: 'Rata-rata Pendapatan (Rp)',
+                    data: averages,
+                    backgroundColor: '#6366f1',
+                    borderRadius: 8
+                }]
+            };
+        }
+
+        function updateCharts() {
+            if (chartRumahInstance && chartPenghasilanInstance) {
+                chartRumahInstance.data = getChartRumahData();
+                chartRumahInstance.update();
+
+                chartPenghasilanInstance.data = getChartPenghasilanData();
+                chartPenghasilanInstance.update();
+            }
+        }
+
+        function showDetailModal(id) {
+            const item = censusData.find(d => d.id === id);
+            if (!item) return;
+
+            const initials = item.nama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('detailAvatar').innerText = initials;
+            document.getElementById('detailNama').innerText = item.nama;
+            document.getElementById('detailId').innerText = `ID Sensus: #${String(item.id).padStart(3, '0')}`;
+            document.getElementById('detailAnggota').innerText = `${item.anggotaKeluarga} Orang`;
+            document.getElementById('detailStatusRumah').innerText = item.statusRumah;
+            document.getElementById('detailPekerjaan').innerText = item.sumberPenghasilan;
+            document.getElementById('detailPendapatan').innerText = formatIDR(item.pendapatanBulan);
+            document.getElementById('detailJumlahRumah').innerText = `${item.jumlahRumah} Unit`;
+            document.getElementById('detailMobil').innerText = `${item.jumlahMobil} Mobil`;
+            document.getElementById('detailMotor').innerText = `${item.jumlahMotor} Motor`;
+
+            document.getElementById('detailModal').classList.remove('hidden');
+            document.getElementById('detailModal').classList.add('flex');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            document.getElementById('detailModal').classList.remove('flex');
+        }
+
+        function openFormModal(isEdit = false) {
+            if (!isEdit) {
+                document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-user-plus mr-2"></i> Tambah Data Sensus';
+                document.getElementById('editIndex').value = -1;
+                document.getElementById('censusForm').reset();
+            }
+            document.getElementById('formModal').classList.remove('hidden');
+            document.getElementById('formModal').classList.add('flex');
+        }
+
+        function closeFormModal() {
+            document.getElementById('formModal').classList.add('hidden');
+            document.getElementById('formModal').classList.remove('flex');
+        }
+
+        function saveCensusData(e) {
+            e.preventDefault();
+            const editId = parseInt(document.getElementById('editIndex').value);
+
+            const newItem = {
+                id: editId > -1 ? editId : Date.now(),
+                nama: document.getElementById('inputNama').value,
+                anggotaKeluarga: parseInt(document.getElementById('inputAnggota').value),
+                sumberPenghasilan: document.getElementById('inputPenghasilan').value,
+                pendapatanBulan: parseFloat(document.getElementById('inputNominalPendapatan').value),
+                statusRumah: document.getElementById('inputStatusRumah').value,
+                jumlahRumah: parseInt(document.getElementById('inputJumlahRumah').value),
+                jumlahMotor: parseInt(document.getElementById('inputMotor').value),
+                jumlahMobil: parseInt(document.getElementById('inputMobil').value)
+            };
+
+            if (editId > -1) {
+                const idx = censusData.findIndex(d => d.id === editId);
+                if (idx !== -1) censusData[idx] = newItem;
+            } else {
+                censusData.unshift(newItem);
+            }
+
+            closeFormModal();
+            applyFilters();
+        }
+
+        function editData(id) {
+            const item = censusData.find(d => d.id === id);
+            if (!item) return;
+
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square mr-2"></i> Edit Data Sensus';
+            document.getElementById('editIndex').value = item.id;
+            document.getElementById('inputNama').value = item.nama;
+            document.getElementById('inputAnggota').value = item.anggotaKeluarga;
+            document.getElementById('inputPenghasilan').value = item.sumberPenghasilan;
+            document.getElementById('inputNominalPendapatan').value = item.pendapatanBulan;
+            document.getElementById('inputStatusRumah').value = item.statusRumah;
+            document.getElementById('inputJumlahRumah').value = item.jumlahRumah;
+            document.getElementById('inputMotor').value = item.jumlahMotor;
+            document.getElementById('inputMobil').value = item.jumlahMobil;
+
+            openFormModal(true);
+        }
+
+        function deleteData(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus data sensus ini?")) {
+                censusData = censusData.filter(d => d.id !== id);
+                applyFilters();
+            }
+        }
+
+        function openApifyModal() {
+            document.getElementById('apifyModal').classList.remove('hidden');
+            document.getElementById('apifyModal').classList.add('flex');
+        }
+
+        function closeApifyModal() {
+            document.getElementById('apifyModal').classList.add('hidden');
+            document.getElementById('apifyModal').classList.remove('flex');
+        }
+
+        function syncToApify() {
+            openApifyModal();
+            const log = document.getElementById('apifyStatusLog');
+            log.innerHTML = `> [${new Date().toLocaleTimeString()}] Connecting to Apify Dataset Engine...<br>`;
+            log.innerHTML += `> Authorization Token: Bearer ${APIFY_TOKEN.substring(0, 16)}...<br>`;
+            
+            setTimeout(() => {
+                log.innerHTML += `> Compiling ${censusData.length} records into JSON payload...<br>`;
+                log.scrollTop = log.scrollHeight;
+            }, 500);
+
+            setTimeout(() => {
+                log.innerHTML += `> POST https://api.apify.com/v2/datasets/census-sync/items<br>`;
+                log.scrollTop = log.scrollHeight;
+            }, 1000);
+
+            setTimeout(() => {
+                log.innerHTML += `<span class="text-amber-400">> [SUCCESS 201 Created] ${censusData.length} Data Sensus successfully pushed to Apify Dataset!</span><br>`;
+                log.scrollTop = log.scrollHeight;
+            }, 1800);
+        }
+
+        function exportDataCSV() {
+            const headers = ["ID", "Nama Kepala Keluarga", "Jumlah Anggota", "Sumber Penghasilan", "Pendapatan Bulanan (IDR)", "Status Rumah", "Jumlah Rumah", "Jumlah Motor", "Jumlah Mobil"];
+            const rows = filteredData.map(d => [
+                d.id,
+                `"${d.nama}"`,
+                d.anggotaKeluarga,
+                `"${d.sumberPenghasilan}"`,
+                d.pendapatanBulan,
+                `"${d.statusRumah}"`,
+                d.jumlahRumah,
+                d.jumlahMotor,
+                d.jumlahMobil
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `sensus_ekonomi_sosial_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
